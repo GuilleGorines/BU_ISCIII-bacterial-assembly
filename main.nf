@@ -557,6 +557,7 @@ process FASTP {
         output:
         tuple val(samplename), val(single_end), path("*.trim.fastq.gz") into ch_fastp_kmerfider,
                                                                     ch_fastp_unicycler
+                                                                    
         path("*.json") into ch_fastp_mqc
         //path "*_fastqc.{zip,html}" into ch_fastp_fastqc_mqc
         path("*.{log,fastp.html}")
@@ -656,6 +657,7 @@ if (!params.reference_fasta && !params.reference_gff) {
 
         output:
         tuple path("*_genomic.fna.gz"), path("*_genomic.gff.gz") into quast_references
+        path("*_genomic.fna.gz") into minimap_reference
         path("references_found.tsv")
 
         script:
@@ -683,7 +685,7 @@ process UNICYCLER {
 
 	output:
 	path(assembly_result) into ch_unicycler_quast
-    tuple val(samplename), val(single_end), path("${samplename}/${samplename}.fasta") into ch_unicycler_prokka
+    tuple val(samplename), path("${samplename}/${samplename}.fasta") into ch_unicycler_prokka, ch_minimap
     
 	script:
     in_reads = single_end ? "-l ${reads}" : "-1 ${reads[0]} -2 ${reads[1]}"
@@ -702,13 +704,21 @@ process UNICYCLER {
 process MINIMAP {
     tag "${samplename}"
     label 'process_medium'
-    publishdir "${params.outdir}/mapping_to_reference/${samplename}", mode: params.publish_dir_mode
+    publishdir "${params.outdir}/mapping_to_reference/", mode: params.publish_dir_mode
 
+    input:
+    tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
 
+    output:
+    path(alignment_file)
 
+    script:
+    alignment_file = "${samplename}_alignment.sam"
+    """
+    minimap2 -c ${reference} ${contigs} > ${alignment_file}
 
-
-
+    """
+    
 }
 
 process QUAST {
@@ -745,7 +755,7 @@ process PROKKA {
 						saveAs: { filename -> if(filename == "prokka_results") "${prefix}_prokka"}
 
 	input:
-	tuple val(samplename), val(single_end), path(scaffold) from ch_unicycler_prokka
+	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
 
 	output:
 	path("prokka_results") into prokka_results
