@@ -704,7 +704,7 @@ process UNICYCLER {
 process MINIMAP {
     tag "${samplename}"
     label 'process_medium'
-    publishdir "${params.outdir}/mapping_to_reference/", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/mapping_to_reference/", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
