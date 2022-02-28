@@ -648,7 +648,7 @@ if (!params.reference_fasta && !params.reference_gff) {
     process FIND_DOWNLOAD_COMMON_REFERENCE {
 
         label 'process_low'
-        publishDir "${params.outdir}/reference_download", mode: params.publish_dir_mode
+        publishDir "${params.outdir}/mapping_to_reference/reference", mode: params.publish_dir_mode
 
         input:
         path(kmerfinder_results) from ch_kmerfinder_results.collect()
@@ -697,6 +697,18 @@ process UNICYCLER {
 
     mv ${samplename}/assembly.fasta $assembly_result
 	"""
+}
+
+process MINIMAP {
+    tag "${samplename}"
+    label 'process_medium'
+    publishdir "${params.outdir}/mapping_to_reference/${samplename}", mode: params.publish_dir_mode
+
+
+
+
+
+
 }
 
 process QUAST {
