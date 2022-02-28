@@ -22,4 +22,4 @@ dependencies:
   - bioconda::prokka=1.14.6
   - bioconda::pilon=1.24
   - bioconda::spades=3.13.0
-  
+  - bioconda::minimap=2.15
