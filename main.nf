@@ -715,7 +715,7 @@ process MINIMAP {
     script:
     alignment_file = "${samplename}_alignment.sam"
     """
-    minimap2 -c ${reference} ${contigs} > ${alignment_file}
+    minimap2 -axsr ${reference} ${contigs} > ${alignment_file}
 
     """
     
