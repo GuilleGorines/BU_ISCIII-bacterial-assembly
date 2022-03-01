@@ -710,7 +710,7 @@ process MINIMAP {
     tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
 
     output:
-    path(alignment_file)
+    tuple val(samplename), path(alignment_file) into ch_samtools_alignment
 
     script:
     alignment_file = "${samplename}_alignment.sam"
@@ -719,6 +719,24 @@ process MINIMAP {
 
     """
     
+}
+
+process SAMTOOLS {
+    tag "${samplename}"
+    label 'process_medium'
+    publishDir "${params.outdir}/mapping_to_reference/"
+
+    input:
+    tuple val(samplename), path(samfile) from ch_samtools_alignment
+
+    output:
+    path(bamfile)
+
+    script:
+    bamfile = "${samplename}_sorted_alignment.bam"
+    """
+    samtools sort -o ${bamfile} ${samfile}
+    """
 }
 
 process QUAST {
