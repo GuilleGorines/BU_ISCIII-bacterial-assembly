@@ -518,7 +518,7 @@ process CAT_FASTQ {
 process FASTQC {
     tag "$name"
     label 'process_low'
-    publishDir "${params.outdir}/fastqc", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/01-preprocessing/fastqc", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       filename.indexOf('.zip') > 0 ? "zips/$filename" : "$filename"
         }
@@ -542,7 +542,7 @@ process FASTQC {
 process FASTP {
         tag "$samplename"
         label 'process_low'
-        publishDir "${params.outdir}/preprocess/fastp", mode: params.publish_dir_mode,
+        publishDir "${params.outdir}/01-preprocessing/fastp", mode: params.publish_dir_mode,
             saveAs: { filename ->
                         if (filename.endsWith(".json")) filename
                         else if (filename.endsWith(".fastp.html")) filename
@@ -596,7 +596,7 @@ process KMERFINDER {
     tag "$samplename"
     label 'process_low'
 
-    publishDir "${params.outdir}/kmerfinder/${samplename}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/02-kmerfinder/${samplename}", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), val(single_end), path(reads) from ch_fastp_kmerfider
@@ -649,7 +649,7 @@ if (!params.reference_fasta && !params.reference_gff) {
     process FIND_DOWNLOAD_COMMON_REFERENCE {
 
         label 'process_low'
-        publishDir "${params.outdir}/mapping_to_reference/reference", mode: params.publish_dir_mode
+        publishDir "${params.outdir}/04-mapping_to_reference/reference", mode: params.publish_dir_mode
 
         input:
         path(kmerfinder_results) from ch_kmerfinder_results.collect()
@@ -678,7 +678,7 @@ if (!params.reference_fasta && !params.reference_gff) {
 process UNICYCLER {
 	tag "${samplename}"
     label 'process_low'
-	publishDir path: { "${params.outdir}/unicycler" }, mode: params.publish_dir_mode
+	publishDir path: { "${params.outdir}/03-assembly/unicycler" }, mode: params.publish_dir_mode
 
 	input:
     tuple val(samplename), val(single_end), path(reads) from ch_fastp_unicycler
@@ -704,7 +704,7 @@ process UNICYCLER {
 process MINIMAP {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/mapping_to_reference/", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/04-mapping_to_reference/", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
@@ -724,7 +724,7 @@ process MINIMAP {
 process SAMTOOLS {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/mapping_to_reference/"
+    publishDir "${params.outdir}/04-mapping_to_reference/"
 
     input:
     tuple val(samplename), path(samfile) from ch_samtools_alignment
@@ -742,7 +742,7 @@ process SAMTOOLS {
 process QUAST {
     tag "${reference_fasta}"
     label 'process_medium'
-	publishDir path: {"${params.outdir}/quast"}, mode: params.publish_dir_mode,
+	publishDir path: {"${params.outdir}/03-assembly/quast"}, mode: params.publish_dir_mode,
 						saveAs: { filename -> if(filename == "quast_results") "${prefix}_quast_results"}
 
 	input:
@@ -769,7 +769,7 @@ process PROKKA {
     tag "${samplename}"
     label 'process_medium'
 
-	publishDir path: {"${params.outdir}/prokka"}, mode: params.publish_dir_mode,
+	publishDir path: {"${params.outdir}/03-assembly/prokka"}, mode: params.publish_dir_mode,
 						saveAs: { filename -> if(filename == "prokka_results") "${samplename}_prokka"}
 
 	input:
