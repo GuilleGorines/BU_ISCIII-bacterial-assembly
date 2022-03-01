@@ -752,7 +752,7 @@ process PROKKA {
     label 'process_medium'
 
 	publishDir path: {"${params.outdir}/prokka"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "prokka_results") "${prefix}_prokka"}
+						saveAs: { filename -> if(filename == "prokka_results") "${samplename}_prokka"}
 
 	input:
 	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
