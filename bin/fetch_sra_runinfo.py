@@ -9,7 +9,7 @@ import requests
 import argparse
 
 
-## Example ids supported by this script
+# Example ids supported by this script
 SRA_IDS = [
     "PRJNA63463",
     "SAMN00765663",
@@ -147,22 +147,22 @@ def fetch_sra_runinfo(FileIn, FileOut, platformList=[], libraryLayoutList=[]):
             if match:
                 prefix = match.group()
                 if prefix in PREFIX_LIST:
-                    if not db_id in seen_ids:
+                    if db_id not in seen_ids:
 
                         ids = [db_id]
-                        ## Resolve/expand these ids against GEO URL
+                        # Resolve/expand these ids against GEO URL
                         if prefix in ["GSE"]:
                             ids = gse_to_srx(db_id)
 
-                        ## Resolve/expand these ids against SRA URL
+                        # Resolve/expand these ids against SRA URL
                         elif prefix in ["GSM", "PRJNA", "SAMN", "SRR"]:
                             ids = id_to_srx(db_id)
 
-                        ## Resolve/expand these ids against ENA URL
+                        # Resolve/expand these ids against ENA URL
                         elif prefix in ["ERR"]:
                             ids = id_to_erx(db_id)
 
-                        ## Resolve/expand to get run identifier from ENA and write to file
+                        # Resolve/expand to get run identifier from ENA and write to file
                         for id in ids:
                             url = "http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession={}&result=read_run".format(
                                 id
@@ -170,7 +170,7 @@ def fetch_sra_runinfo(FileIn, FileOut, platformList=[], libraryLayoutList=[]):
                             csv_dict = csv.DictReader(fetch_url(url), delimiter="\t")
                             for row in csv_dict:
                                 run_id = row["run_accession"]
-                                if not run_id in run_ids:
+                                if run_id not in run_ids:
 
                                     writeID = True
                                     if platformList:
