@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 =============================================================
 HEADER
 =============================================================
@@ -38,7 +38,7 @@ DISCLAIMER: This script has been designed for the assembly pipeline of BU-ISCIII
 ================================================================
 END_OF_HEADER
 ================================================================
-'''
+"""
 
 import sys
 import argparse
@@ -46,28 +46,40 @@ import os
 
 import wget
 
+
 def parse_args(args=None):
-    Description = 'download the reference files (fna, faa, gff) from the reference NCBI file.'
+    Description = (
+        "download the reference files (fna, faa, gff) from the reference NCBI file."
+    )
     Epilog = """Usage example: python download_reference.py -file <file with the references created by find_common_reference> -reference <file from the NCBI with all bacterial references> -out_dir <output directory>"""
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
-    parser.add_argument('-file', help="File containing the ranking of references from kmerfinder.")
-    parser.add_argument('-reference', help="File containing the paths to bacterial references.")
-    parser.add_argument('-out_dir', help="Output directory.")
-    
+    parser.add_argument(
+        "-file", help="File containing the ranking of references from kmerfinder."
+    )
+    parser.add_argument(
+        "-reference", help="File containing the paths to bacterial references."
+    )
+    parser.add_argument("-out_dir", help="Output directory.")
+
     return parser.parse_args(args)
 
-def download_references (file, reference, out_dir):
-    '''
-    Downloads the top reference from the NCBI database 
-    '''
 
-    reference_ends = ['_genomic.fna.gz','_protein.faa.gz', '_genomic.gff.gz']
-    
+def download_references(file, reference, out_dir):
+    """
+    Downloads the top reference from the NCBI database
+    """
+
+    reference_ends = ["_genomic.fna.gz", "_protein.faa.gz", "_genomic.gff.gz"]
+
     # extract the most common reference from file
     with open(file) as infile:
         infile = infile.readlines()
-        infile = [item.replace("\n","").split("\t") for item in infile if not item.startswith("#")]
+        infile = [
+            item.replace("\n", "").split("\t")
+            for item in infile
+            if not item.startswith("#")
+        ]
         top_reference = infile[0][0]
 
     print(top_reference)
@@ -81,31 +93,35 @@ def download_references (file, reference, out_dir):
     # open the reference and find the reference
     with open(reference) as infile:
         infile = infile.readlines()
-        infile = [item.replace("\n","").split("\t") for item in infile if not item.startswith("#")]
+        infile = [
+            item.replace("\n", "").split("\t")
+            for item in infile
+            if not item.startswith("#")
+        ]
 
         url = [row[19] for row in infile if row[0] in top_reference]
-    
+
         url = str(url[0])
 
     # get url and reference file
 
-
-
     for r_end in reference_ends:
-        
+
         out_file = out_dir + "/" + top_reference + r_end
-        file_url = url + '/' + top_reference + r_end
-        
+        file_url = url + "/" + top_reference + r_end
+
         print(out_file)
         print(file_url)
 
         wget.download(file_url, out_file)
-    
+
     return
+
 
 def main(args=None):
     args = parse_args(args)
     download_references(args.file, args.reference, args.out_dir)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())
