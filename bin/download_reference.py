@@ -9,10 +9,11 @@ MAIL: guillermo.gorines@urjc.es
 VERSION: 0.1
 CREATED: Early 2022
 REVISED: 18-2-2022
-DESCRIPTION: 
-    Given a file with the kmerfinder results and frequencies (probably created by
-    find_common_reference.py), and the NCBI assembly sheet, download the top-reference
-    genome, gff and protein files from the NCBI ftp. 
+DESCRIPTION:
+    Given a file with the kmerfinder results and frequencies (probably
+    created by find_common_reference.py), and the NCBI assembly sheet,
+    download the top-reference genome, gff and protein files from
+    the NCBI ftp.
 
 INPUT:
     -FILE: file containing the ranking of references from kmerfinder.
@@ -26,15 +27,19 @@ OUTPUT:
     - *_protein.gz: file with the top-reference proteins
 
 USAGE:
-    python download_reference.py -file [FILE] -reference [REFERENCE] -out_dir [OUTDIR]
+    python download_reference.py
+    -file [FILE]
+    -reference [REFERENCE]
+    -out_dir [OUTDIR]
 
 REQUIREMENTS:
     -Python >= 3.6
     -Python wget
 
-DISCLAIMER: This script has been designed for the assembly pipeline of BU-ISCIII.
-            Feel free to use it at will, however we dont guarantee its success
-            outside its purpose.
+DISCLAIMER:
+    This script has been designed for the assembly pipeline of BU-ISCIII.
+    Feel free to use it at will, however we dont guarantee its success
+    outside its purpose.
 ================================================================
 END_OF_HEADER
 ================================================================
@@ -49,18 +54,28 @@ import wget
 
 def parse_args(args=None):
     Description = (
-        "download the reference files (fna, faa, gff) from the reference NCBI file."
+        "download the reference files \
+        (fna, faa, gff)from the reference NCBI file."
     )
-    Epilog = """Usage example: python download_reference.py -file <file with the references created by find_common_reference> -reference <file from the NCBI with all bacterial references> -out_dir <output directory>"""
+    Epilog = """Usage example: \
+        python download_reference.py \
+        -file <file with the references created by find_common_reference> \
+        -reference <file from the NCBI with all bacterial references> \
+        -out_dir <output directory>"""
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument(
-        "-file", help="File containing the ranking of references from kmerfinder."
+        "-file",
+        help="File containing the ranking of references from kmerfinder."
     )
     parser.add_argument(
-        "-reference", help="File containing the paths to bacterial references."
+        "-reference",
+        help="File containing the paths to bacterial references."
     )
-    parser.add_argument("-out_dir", help="Output directory.")
+    parser.add_argument(
+        "-out_dir",
+        help="Output directory."
+    )
 
     return parser.parse_args(args)
 
