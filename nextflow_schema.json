@@ -261,15 +261,15 @@
                     "default": 50
                 },
                 "skip_adapter_trimming": {
-                    "type": "string",
+                    "type": "boolean",
                     "default": "false"
                 },
                 "skip_amplicon_trimming": {
-                    "type": "string",
+                    "type": "boolean",
                     "default": "false"
                 },
                 "save_trimmed": {
-                    "type": "string",
+                    "type": "boolean",
                     "default": "false"
                 },
                 "qualified_quality_phred": {
@@ -329,7 +329,7 @@
     ],
     "properties": {
         "skip_sra": {
-            "type": "string",
+            "type": "boolean",
             "default": "true"
         },
         "kmerfinder_bacteria_database": {
