@@ -79,28 +79,8 @@ ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 /*
  * Create a channel for input read files
  */
-/*
-if (params.input) {
-    if (params.single_end) {
-        Channel
-            .from(params.input)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input was empty - no input files supplied' }
-            .into { ch_read_files_fastp; ch_read_files_fastqc;  ch_read_files_trimming }
-    } else {
-        Channel
-            .from(params.input)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true), file(row[1][1], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input was empty - no input files supplied' }
-            .into { ch_read_files_fastp; ch_read_files_fastqc;  ch_read_files_trimming }
-    }
-} else {
-    Channel
-        .fromFilePairs(params.input, size: params.single_end ? 1 : 2)
-        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --single_end on the command line." }
-        .into { ch_read_files_fastp; ch_read_files_fastqc; ch_read_files_trimming }
-}
-*/
+
+if (params.input) { ch_input = file(params.input, checkIfExists: true) } else { exit 1, "Samplesheet file (-input) not specified!" }
 
 ////////////////////////////////////////////////////
 /* --               PARAMETER SUMMARY          -- */
@@ -188,92 +168,6 @@ process get_software_versions {
 
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
-}
-
-if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_bacteria_database.endsWith('.tar')) {
-
-    Channel.from(kmerfinder_bacteria_database).set { kmerfinder_db_uncompress } 
-
-    process UNCOMPRESS_KMERFINDER_DB {
-        label 'error_retry'
-
-        input:
-        path(kmerfinder_compressed_database) from kmerfinder_db_uncompress
-
-        output: 
-        path(kmerfinderDB) into ch_kmerfinder_db
-
-        script:
-        kmerfinderDB = kmerfinder_compressed_database.toString() - ".gz" - ".tar"
-        """
-        mkdir $kmerfinderDB
-        tar -xf ${kmerfinder_compressed_database} -C ${kmerfinderDB} --strip-components 1
-        """
-    }
-
-} 
-
-/*
- * PREPROCESSING: check and uncompress references
- */
-
-if ( params.reference_fasta ) {
-
-    if (params.reference_fasta){
-        file(params.reference_fasta, checkIfExists: true)
-        if (params.reference_fasta.endsWith('.gz')) {
-
-            process GUNZIP_FASTA {
-                label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
-
-                input:
-                path(fasta) from params.fasta
-
-                output:
-                path(unzip) into fasta_reference
-
-                script:
-                unzip = fasta.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $fasta
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_fasta).set { fasta_reference }
-        }
-    }
-
-    if (params.reference_gff) {
-        file(params.reference_gff, checkIfExists: true)
-        if (params.reference_gff.endsWith('.gz')) {
-            
-            process GUNZIP_GFF {
-                label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
-
-                input:
-                path(gff) from params.gff
-
-                output:
-                path(unzip) into gff_reference
-
-                script:
-                unzip = gff.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $gff
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_gff).set { gff_reference }
-        }
-    }
-
-    fasta_reference.combine(gff_reference).set { quast_references }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -511,6 +405,96 @@ process CAT_FASTQ {
     }
 }
 
+
+
+if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_bacteria_database.endsWith('.tar')) {
+
+    Channel.from(kmerfinder_bacteria_database).set { kmerfinder_db_uncompress } 
+
+    process UNCOMPRESS_KMERFINDER_DB {
+        label 'error_retry'
+
+        input:
+        path(kmerfinder_compressed_database) from kmerfinder_db_uncompress
+
+        output: 
+        path(kmerfinderDB) into ch_kmerfinder_db
+
+        script:
+        kmerfinderDB = kmerfinder_compressed_database.toString() - ".gz" - ".tar"
+        """
+        mkdir $kmerfinderDB
+        tar -xf ${kmerfinder_compressed_database} -C ${kmerfinderDB} --strip-components 1
+        """
+    }
+
+} 
+
+/*
+ * PREPROCESSING: check and uncompress references
+ */
+
+if ( params.reference_fasta ) {
+
+    if (params.reference_fasta){
+        file(params.reference_fasta, checkIfExists: true)
+        if (params.reference_fasta.endsWith('.gz')) {
+
+            process GUNZIP_FASTA {
+                label 'error_retry'
+                if (params.save_reference) {
+                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
+                }
+
+                input:
+                path(fasta) from params.fasta
+
+                output:
+                path(unzip) into fasta_reference
+
+                script:
+                unzip = fasta.toString() - '.gz'
+                """
+                pigz -f -d -p $task.cpus $fasta
+                """
+            }
+        } else {
+            Channel.fromPath(params.reference_fasta).set { fasta_reference }
+        }
+    }
+
+    if (params.reference_gff) {
+        file(params.reference_gff, checkIfExists: true)
+        if (params.reference_gff.endsWith('.gz')) {
+            
+            process GUNZIP_GFF {
+                label 'error_retry'
+                if (params.save_reference) {
+                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
+                }
+
+                input:
+                path(gff) from params.gff
+
+                output:
+                path(unzip) into gff_reference
+
+                script:
+                unzip = gff.toString() - '.gz'
+                """
+                pigz -f -d -p $task.cpus $gff
+                """
+            }
+        } else {
+            Channel.fromPath(params.reference_gff).set { gff_reference }
+        }
+    }
+
+    fasta_reference.combine(gff_reference).set { quast_references }
+}
+
+
+
 /*
  * STEP 1 - FastQC
  */
@@ -538,7 +522,6 @@ process FASTQC {
 /*
  * STEP 2: Fastp adapter and quality filtering
  */
-
 process FASTP {
         tag "$samplename"
         label 'process_low'
