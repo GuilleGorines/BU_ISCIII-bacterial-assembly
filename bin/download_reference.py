@@ -116,6 +116,11 @@ def download_references(file, reference, out_dir):
 
         url = [row[19] for row in infile if row[0] in top_reference]
 
+        if len(url) == 0:
+            print("No assemblies responding to the top reference: ", top_reference, " were found")
+            sys.exit(1)
+
+
         url = str(url[0])
 
     # get url and reference file
