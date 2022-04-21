@@ -579,20 +579,20 @@ process KMERFINDER {
     tag "$samplename"
     label 'process_medium'
 
-    publishDir "${params.outdir}/02-kmerfinder/${samplename}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/02-kmerfinder", mode: params.publish_dir_mode
+						saveAs: { filename -> if(filename == "${samplename_dir}") "${samplename_dir}"}
 
     input:
     tuple val(samplename), val(single_end), path(reads) from ch_fastp_kmerfider
     path(kmerfinderDB) from ch_kmerfinder_db
 
     output:
-    path(kmerfinder_result) into ch_kmerfinder_results
+    path("${samplename_dir}/results.txt") into ch_kmerfinder_results
     path(samplename_dir) into ch_kmerfinder_results_bydir
 
     script:
     samplename_dir = "${samplename}"
     in_reads = single_end ? "${reads}" : "${reads[0]} ${reads[1]}"
-    kmerfinder_result = "${samplename}_results.txt"
 
     """
     kmerfinder.py \\
@@ -601,8 +601,6 @@ process KMERFINDER {
     --db_path $kmerfinderDB/bacteria.ATG \\
     -tax $kmerfinderDB/bacteria.name \\
     -x 
-
-    ln -s ${samplename_dir}/results.txt $kmerfinder_result
     """
 }
 
