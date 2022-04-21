@@ -577,7 +577,7 @@ process FASTP {
 
 process KMERFINDER {
     tag "$samplename"
-    label 'process_low'
+    label 'process_medium'
 
     publishDir "${params.outdir}/02-kmerfinder/${samplename}", mode: params.publish_dir_mode
 
@@ -758,7 +758,7 @@ process PROKKA {
 	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
 
 	output:
-	path("prokka_results") into prokka_results
+	path("prokka_results") into prokka_results_multiqc
 
 	script:
 
@@ -809,6 +809,9 @@ process MULTIQC {
     path(multiqc_config) from ch_multiqc_config
     path(mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])   
     path('fastqc/*') from ch_fastqc_results.collect().ifEmpty([])
+    path('fastp/*') from ch_fastp_mqc.collect().ifEmpty([])
+    path('quast/*') from quast_multiqc.collect().ifEmpty([])
+    path('prokka/*') from prokka_results_multiqc.collect().ifEmpty([])
     path('software_versions/*') from ch_software_versions_yaml.collect()
     path(workflow_summary) from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
 
