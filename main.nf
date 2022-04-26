@@ -670,7 +670,7 @@ process UNICYCLER {
     
 	script:
     in_reads = single_end ? "-l ${reads}" : "-1 ${reads[0]} -2 ${reads[1]}"
-    assembly_result = "${samplename}/${samplename}.fasta"
+    assembly_result = "${samplename}.fasta"
 
 	"""
 	unicycler \\
@@ -685,7 +685,6 @@ process UNICYCLER {
 process MINIMAP {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/04-mapping_to_reference/", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
@@ -710,7 +709,7 @@ process SAMTOOLS {
     tuple val(samplename), path(samfile) from ch_samtools_alignment
 
     output:
-    path(bamfile)
+    file(bamfile)
 
     script:
     bamfile = "${samplename}_sorted_alignment.bam"
