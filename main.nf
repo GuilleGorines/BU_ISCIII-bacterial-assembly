@@ -757,14 +757,16 @@ process PROKKA {
 	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
 
 	output:
-	path("prokka_results") into prokka_results_multiqc
+	path(results_dir) into prokka_results_multiqc
 
 	script:
+
+    results_dir = "${prokka_results}_${samplename}"
 
 	"""
 	prokka \\
     --force \\
-    --outdir prokka_results \\
+    --outdir $results_dir \\
     --prefix $samplename \\
     --addgenes \\
     --kingdom Bacteria \\
@@ -774,6 +776,8 @@ process PROKKA {
     --centre CNM \\
     --compliant \\
     ${scaffold}
+
+
 	"""
 }
 
