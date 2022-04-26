@@ -587,7 +587,7 @@ process KMERFINDER {
     path(kmerfinderDB) from ch_kmerfinder_db
 
     output:
-    path("${samplename}_results.txt") into ch_kmerfinder_results
+    path("${samplename_dir}/${samplename}_results.txt") into ch_kmerfinder_results
     path(samplename_dir) into ch_kmerfinder_results_bydir
 
     script:
