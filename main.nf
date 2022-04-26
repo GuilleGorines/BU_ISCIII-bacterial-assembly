@@ -668,7 +668,7 @@ process UNICYCLER {
 
 	output:
 	path(assembly_result) into ch_unicycler_quast
-    tuple val(samplename), path("${samplename}/${samplename}.fasta") into ch_unicycler_prokka, ch_minimap
+    tuple val(samplename), path(assembly_result) into ch_unicycler_prokka, ch_minimap
     
 	script:
     in_reads = single_end ? "-l ${reads}" : "-1 ${reads[0]} -2 ${reads[1]}"
