@@ -602,7 +602,7 @@ process KMERFINDER {
     -tax $kmerfinderDB/bacteria.name \\
     -x
 
-    mv $samplename_dir/results.txt ${samplename}_results.txt
+    mv $samplename_dir/results.txt $samplename_dir/${samplename}_results.txt
     """
 }
 
