@@ -776,8 +776,6 @@ process PROKKA {
     --centre CNM \\
     --compliant \\
     ${scaffold}
-
-
 	"""
 }
 
