@@ -579,7 +579,7 @@ process KMERFINDER {
     tag "$samplename"
     label 'process_medium'
 
-    publishDir "${params.outdir}/02-kmerfinder", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/02-kmerfinder", mode: params.publish_dir_mode,
 						saveAs: { filename -> if(filename == "${samplename_dir}") "${samplename_dir}"}
 
     input:
