@@ -587,7 +587,7 @@ process KMERFINDER {
     path(kmerfinderDB) from ch_kmerfinder_db
 
     output:
-    path("${samplename_dir}/results.txt") into ch_kmerfinder_results
+    path("${samplename}_results.txt") into ch_kmerfinder_results
     path(samplename_dir) into ch_kmerfinder_results_bydir
 
     script:
@@ -600,7 +600,9 @@ process KMERFINDER {
     --output_folder $samplename_dir \\
     --db_path $kmerfinderDB/bacteria.ATG \\
     -tax $kmerfinderDB/bacteria.name \\
-    -x 
+    -x
+
+    mv $samplename_dir/results.txt ${samplename}_results.txt
     """
 }
 
