@@ -761,7 +761,7 @@ process PROKKA {
 
 	script:
 
-    results_dir = "${prokka_results}_${samplename}"
+    results_dir = "prokka_results_${samplename}"
 
 	"""
 	prokka \\
