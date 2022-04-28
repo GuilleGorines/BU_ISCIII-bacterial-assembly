@@ -724,7 +724,7 @@ process QUAST {
     tag "${reference_fasta}"
     label 'process_medium'
 	publishDir path: {"${params.outdir}/03-assembly/quast"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "quast_results") "${prefix}_quast_results"}
+						saveAs: { filename -> if(filename == "quast_results") "quast_results"}
 
 	input:
 
