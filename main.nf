@@ -727,7 +727,6 @@ process QUAST {
 						saveAs: { filename -> if(filename == "quast_results") "quast_results"}
 
 	input:
-
 	path(assembly_result) from ch_unicycler_quast.collect()
     tuple path(reference_fasta), path(reference_gff) from quast_references
 
