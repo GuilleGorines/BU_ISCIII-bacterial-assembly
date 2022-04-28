@@ -705,7 +705,7 @@ process MINIMAP {
 process SAMTOOLS {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/04-mapping_to_reference/"
+    publishDir "${params.outdir}/04-mapping_to_reference/", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(samfile) from ch_samtools_alignment
