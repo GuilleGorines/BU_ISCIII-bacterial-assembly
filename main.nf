@@ -620,7 +620,6 @@ process CHECK_CONTAMINATION {
     script:
     """
     parse_kmerfinder.py --path . --output_bn kmerfinder.bn --output_csv kmerfinder.csv
-
     """
 }
 
@@ -705,7 +704,7 @@ process MINIMAP {
 process SAMTOOLS {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/04-mapping_to_reference/"
+	publishDir path: { "${params.outdir}/04-mapping_to_reference" }, mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(samfile) from ch_samtools_alignment
@@ -723,8 +722,8 @@ process SAMTOOLS {
 process QUAST {
     tag "${reference_fasta}"
     label 'process_medium'
-	publishDir path: {"${params.outdir}/03-assembly/quast"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "quast_results") "${prefix}_quast_results"}
+	publishDir path: {"${params.outdir}/03-assembly"}, mode: params.publish_dir_mode,
+						saveAs: { filename -> if(filename == "quast_results") "quast_results"}
 
 	input:
 
@@ -750,8 +749,7 @@ process PROKKA {
     tag "${samplename}"
     label 'process_medium'
 
-	publishDir path: {"${params.outdir}/03-assembly/prokka"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "prokka_results") "${samplename}_prokka"}
+	publishDir path: {"${params.outdir}/03-assembly/prokka"}, mode: params.publish_dir_mode
 
 	input:
 	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
@@ -761,7 +759,7 @@ process PROKKA {
 
 	script:
 
-    results_dir = "prokka_results_${samplename}"
+    results_dir = "${samplename}_prokka"
 
 	"""
 	prokka \\
@@ -804,7 +802,7 @@ process OUTPUT_DOCUMENTATION {
  */
 
 process MULTIQC {
-    publishDir "${params.outdir}/MultiQC", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/99-stats/MultiQC", mode: params.publish_dir_mode
 
     input:
     path(multiqc_config) from ch_multiqc_config
