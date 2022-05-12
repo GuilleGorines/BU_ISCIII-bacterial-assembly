@@ -706,11 +706,12 @@ process SAMTOOLS {
     label 'process_medium'
 	publishDir path: { "${params.outdir}/04-mapping_to_reference" }, mode: params.publish_dir_mode
 
+
     input:
     tuple val(samplename), path(samfile) from ch_samtools_alignment
 
     output:
-    file(bamfile)
+    path(bamfile)
 
     script:
     bamfile = "${samplename}_sorted_alignment.bam"
@@ -726,7 +727,6 @@ process QUAST {
 						saveAs: { filename -> if(filename == "quast_results") "quast_results"}
 
 	input:
-
 	path(assembly_result) from ch_unicycler_quast.collect()
     tuple path(reference_fasta), path(reference_gff) from quast_references
 
