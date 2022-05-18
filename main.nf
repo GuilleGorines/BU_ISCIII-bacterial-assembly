@@ -659,7 +659,7 @@ if (!params.reference_fasta && !params.reference_gff) {
 
 process UNICYCLER {
 	tag "${samplename}"
-    label 'process_low'
+    label 'process_high'
 	publishDir path: { "${params.outdir}/03-assembly/unicycler" }, mode: params.publish_dir_mode
 
 	input:
