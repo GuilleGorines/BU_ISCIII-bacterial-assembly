@@ -525,14 +525,12 @@ process FASTQC {
 process FASTP {
         tag "$samplename"
         label 'process_low'
-        publishDir "${params.outdir}/01-preprocessing/fastp", mode: params.publish_dir_mode,
+        publishDir "${params.outdir}/01-preprocessing", mode: params.publish_dir_mode,
             saveAs: { filename ->
-                        if (filename.endsWith(".json")) filename
-                        else if (filename.endsWith(".fastp.html")) filename
-                        else if (filename.endsWith("_fastqc.html")) "fastqc/$filename"
-                        else if (filename.endsWith(".zip")) "fastqc/zips/$filename"
-                        else if (filename.endsWith(".log")) "log/$filename"
-                        else params.save_trimmed ? filename : null
+                        if (filename.endsWith(".json")) "fastp/${filename}"
+                        else if (filename.endsWith(".fastp.html")) "fastp/${filename}"
+                        else if (filename.endsWith(".log")) "fastp/logs/${filename}"
+                        else if (params.save_trimmed && filename.endsWith(".trim.fastq.gz")) "trimmed_sequences/${filename}"
                     }
         input:
         tuple val(samplename), val(single_end), path(reads) from ch_cat_fastp
