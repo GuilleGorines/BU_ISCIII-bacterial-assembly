@@ -13,18 +13,18 @@ The directories listed below will be created in the results directory after the 
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and data is processed using the following steps:
 
-* [01-preprocessing]() - 
-* [02-kmerfinder]()
-* [03-assembly]()
-* [04-mapping_to_reference]()
-* [99-stats]()
-* [pipeline_info]()
-
+* [01-preprocessing](#01_preprocessing) - 
+* [02-kmerfinder](#02_kmerfinder)
+* [03-assembly](#03_assembly)
+* [04-mapping_to_reference](#04_mapping_to_reference)
+* [99-stats](#99_stats)
+* [pipeline_info](#pipeline_info)
 
   * [FastQC](#fastqc) - Read quality control
   * [FastP](#fastp) - Read quality trimming
   * [MultiQC](#multiqc) - Aggregate report describing results from the whole pipeline
 * [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
+
 
 ## FastQC
 
