@@ -96,6 +96,7 @@ if (params.reference_fasta) summary['Reference'] = "Provided beforehand"
 if (params.reference_fasta) summary['Fasta reference'] = params.reference_fasta
 if (params.reference_gff) summary['GFF reference'] = params.reference_gff
 if (!params.reference_fasta) summary['Reference'] = "To be downloaded"
+summary['Reference outdir'] = params.reference_outdir
 summary['Gram']             = params.gram
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
