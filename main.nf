@@ -629,7 +629,7 @@ if (!params.reference_fasta && !params.reference_gff) {
     process FIND_DOWNLOAD_COMMON_REFERENCE {
 
         label 'process_low'
-        publishDir "${params.outdir}/04-mapping_to_reference/reference", mode: params.publish_dir_mode
+        publishDir path : { "${params.outdir}/04-mapping_to_reference/reference" }, mode: params.publish_dir_mode
 
         input:
         path(kmerfinder_results) from ch_kmerfinder_results.collect()
@@ -702,7 +702,7 @@ process MINIMAP {
 process SAMTOOLS {
     tag "${samplename}"
     label 'process_medium'
-	publishDir path: { "${params.outdir}/04-mapping_to_reference" }, mode: params.publish_dir_mode
+	publishDir path: params.reference_outdir ? "${params.reference_outdir}" : "${params.outdir}/04-mapping_to_reference", mode: params.publish_dir_mode
 
 
     input:
