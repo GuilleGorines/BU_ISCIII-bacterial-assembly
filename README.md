@@ -25,39 +25,27 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 4. Start running your own analysis!
 
-    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
     ```bash
     nextflow run BU-ISCIII Bacterial Assembly -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input '*_R{1,2}.fastq.gz'
     ```
 
-See [usage docs](https://nf-co.re/assemblybacterias/usage) for all of the available options when running the pipeline.
-
 ## Pipeline Summary
 
-By default, the pipeline currently performs the following:
-
-<!-- TODO nf-core: Fill in short bullet-pointed list of default steps of pipeline -->
+By default, the pipeline currently performs the following steps:
 
 * Sequencing quality control (`FastQC, version 0.11.9`)
 * Sequence trimming (`FastP, version 0.23.2`)
-* Identification of the organism (`KmerFinder, version `)
-* Download of most abundant kmerfinder reference from the NCBI (`ad-hoc Python scripts`)
+* Identification of the bacterial organism (`KmerFinder, version 3.0`)
+* Download of most abundant kmerfinder reference from the NCBI (`ad-hoc Python 3 scripts`)
 * Assembly of reads (`UniCycler, version 0.4.8`)
 * Assesment of assembly using the downloaded reference (`Quast, version 5.0.2`)
 * Mapping of the reads against the reference (`Minimap 2, version 2.24`)
 * Generating the bam from the alignment of the reference (`Samtools, version 1.14`)
 * Overall pipeline run summaries (`MultiQC, version 1.11`)
 
-## Documentation
-
-The BU-ISCIII Bacterial Assembly pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/assemblybacterias/usage) and [output](https://nf-co.re/assemblybacterias/output).
-
-<!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
-
 ## Credits
 
-BU-ISCIII Bacterial Assembly was originally written by Luis Chapado, and further improved by Sara Monzón and Guillermo Gorines. 
+BU-ISCIII Bacterial Assembly was originally written by Guillermo Gorines. 
 
 
 ## Disclaimer
