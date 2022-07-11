@@ -39,12 +39,25 @@ By default, the pipeline currently performs the following steps:
 * Download of most abundant kmerfinder reference from the NCBI (`ad-hoc Python 3 scripts`)
 * Assembly of reads (`UniCycler, version 0.4.8`)
 * Assesment of assembly using the downloaded reference (`Quast, version 5.0.2`)
+* Annotation of the assembly (`Prokka, version 1.14.6`)
 * Mapping of the reads against the reference (`Minimap 2, version 2.24`)
 * Generating the bam from the alignment of the reference (`Samtools, version 1.14`)
+
 * Overall pipeline run summaries (`MultiQC, version 1.11`)
 
-## Credits
+## Pipeline work, in depth
 
+The detailed steps of the pipeline are the following:
+
+For each sample in the sample sheet, a quality assessment using `FastQC (v 0.11.9)` with standard parameters is performed. Right after, the reads of each sample are submitted to a trimming process using `FastP (v 0.23.2)` with the following parameters by default: `--cut_front, --cut_tail, --cut_mean_quality, --qualified_quality_phred, --unqualified_percent_limit, --length_required, --trim_poly_x`. These parameters can be changed by using the available flags.
+
+Once the reads have been trimmed, `kmerfinder (v 3.0)` identifies through a k-mer approach all the bacterias present in the reads, using its standard parameters. The genome of the most abundant bacteria strain in all the samples is downloaded using this results, along with its gff (genomic features) file. Besides, a csv (comma separated values) file containing the top 2 hits in kmerfinder is generated, in order to trace whether or not a particular sample can be contaminated.
+
+The reads are assembled using `Unicycler (v 0.4.8)` with standard parameters. Once this process has reached its end, the resulting assembly is evaluated and compared to the downloaded genome and gff using `Quast (v 5.0.2)`. In addition, the assemblies are mapped against the downloaded reference with `Minimap 2 (v 2.24)` with the default params, and the resulting *.sam* file is converted to a sorted *.bam* file using `Samtools (v 1.14)`. The assembly is later annotated using `Prokka (v 1.14.6)`.
+
+For the last step, all logs generated during the pipeline (FastQC, FastP, Quast) are collapsed into a `Multiqc (v 1.11)` html file to allow their easy checking.
+
+## Credits
 BU-ISCIII Bacterial Assembly was originally written by Guillermo Gorines. 
 
 
