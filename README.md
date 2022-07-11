@@ -39,13 +39,15 @@ By default, the pipeline currently performs the following:
 
 <!-- TODO nf-core: Fill in short bullet-pointed list of default steps of pipeline -->
 
-* Sequencing quality control (`FastQC`)
-* Sequence trimming (`FastP`)
-* Identification of organism (`KmerFinder`)
-* Download of most abundant kmerfinder reference (`Python`)
-* Assembly of reads (`UniCycler`)
-* Assesment of assembly using the downloaded reference (`Quast`)
-* Overall pipeline run summaries (`MultiQC`)
+* Sequencing quality control (`FastQC, version 0.11.9`)
+* Sequence trimming (`FastP, version 0.23.2`)
+* Identification of the organism (`KmerFinder, version `)
+* Download of most abundant kmerfinder reference from the NCBI (`ad-hoc Python scripts`)
+* Assembly of reads (`UniCycler, version 0.4.8`)
+* Assesment of assembly using the downloaded reference (`Quast, version 5.0.2`)
+* Mapping of the reads against the reference (`Minimap 2, version 2.24`)
+* Generating the bam from the alignment of the reference (`Samtools, version 1.14`)
+* Overall pipeline run summaries (`MultiQC, version 1.11`)
 
 ## Documentation
 
