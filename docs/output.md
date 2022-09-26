@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
+This document describes the output produced by the BU-ISCIII bacterial assembly pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
@@ -11,11 +11,20 @@ The directories listed below will be created in the results directory after the 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
-and processes data using the following steps:
+and data is processed using the following steps:
 
-* [FastQC](#fastqc) - Read quality control
-* [MultiQC](#multiqc) - Aggregate report describing results from the whole pipeline
+* [01-preprocessing](#01_preprocessing) - 
+* [02-kmerfinder](#02_kmerfinder)
+* [03-assembly](#03_assembly)
+* [04-mapping_to_reference](#04_mapping_to_reference)
+* [99-stats](#99_stats)
+* [pipeline_info](#pipeline_info)
+
+  * [FastQC](#fastqc) - Read quality control
+  * [FastP](#fastp) - Read quality trimming
+  * [MultiQC](#multiqc) - Aggregate report describing results from the whole pipeline
 * [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
+
 
 ## FastQC
 

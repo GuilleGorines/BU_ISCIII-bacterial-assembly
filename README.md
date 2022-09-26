@@ -1,19 +1,11 @@
-# ![nf-core/assemblybacterias](docs/images/nf-core-assemblybacterias_logo.png)
+# ![BU-ISCIII Bacterial Assembly](docs/images/nf-core-assemblybacterias_logo.png)
 
-**Nextflow for assembling bacterias**.
-
-[![GitHub Actions CI Status](https://github.com/nf-core/assemblybacterias/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/assemblybacterias/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/assemblybacterias/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/assemblybacterias/actions)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.04.0-brightgreen.svg)](https://www.nextflow.io/)
-
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
-[![Docker](https://img.shields.io/docker/automated/nfcore/assemblybacterias.svg)](https://hub.docker.com/r/nfcore/assemblybacterias)
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23assemblybacterias-4A154B?logo=slack)](https://nfcore.slack.com/channels/assemblybacterias)
+**Nextflow pipeline for assembling bacterias**.
 
 ## Introduction
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-**nf-core/assemblybacterias** is a bioinformatics best-practise analysis pipeline for
+**BU-ISCIII Bacterial Assembly** is a bioinformatics best-practise analysis pipeline for
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
@@ -26,55 +18,56 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
     ```bash
-    nextflow run nf-core/assemblybacterias -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run BU_ISCIII-bacterial-assembly/main.nf -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
     ```
 
     > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
 
 4. Start running your own analysis!
 
-    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
     ```bash
-    nextflow run nf-core/assemblybacterias -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
+    nextflow run BU-ISCIII Bacterial Assembly -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input '*_R{1,2}.fastq.gz'
     ```
-
-See [usage docs](https://nf-co.re/assemblybacterias/usage) for all of the available options when running the pipeline.
 
 ## Pipeline Summary
 
-By default, the pipeline currently performs the following:
+By default, the pipeline currently performs the following steps:
 
-<!-- TODO nf-core: Fill in short bullet-pointed list of default steps of pipeline -->
+* Sequencing quality control (`FastQC, version 0.11.9`)
+* Sequence trimming (`FastP, version 0.23.2`)
+* Identification of the bacterial organism (`KmerFinder, version 3.0`)
+* Download of most abundant kmerfinder reference from the NCBI (`ad-hoc Python 3 scripts`)
+* Assembly of reads (`UniCycler, version 0.4.8`)
+* Assesment of assembly using the downloaded reference (`Quast, version 5.0.2`)
+* Annotation of the assembly (`Prokka, version 1.14.6`)
+* Mapping of the reads against the reference (`Minimap 2, version 2.24`)
+* Generating the bam from the alignment of the reference (`Samtools, version 1.14`)
 
-* Sequencing quality control (`FastQC`)
-* Overall pipeline run summaries (`MultiQC`)
+* Overall pipeline run summaries (`MultiQC, version 1.11`)
 
-## Documentation
+## Pipeline work, in depth
 
-The nf-core/assemblybacterias pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/assemblybacterias/usage) and [output](https://nf-co.re/assemblybacterias/output).
+The detailed steps of the pipeline are the following:
 
-<!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
+For each sample in the sample sheet, a quality assessment using `FastQC (v 0.11.9)` with standard parameters is performed. Right after, the reads of each sample are submitted to a trimming process using `FastP (v 0.23.2)` with the following parameters by default: `--cut_front, --cut_tail, --cut_mean_quality, --qualified_quality_phred, --unqualified_percent_limit, --length_required, --trim_poly_x`. These parameters can be changed by using the available flags.
+
+Once the reads have been trimmed, `kmerfinder (v 3.0)` identifies through a k-mer approach all the bacterias present in the reads, using its standard parameters. The genome of the most abundant bacteria strain in all the samples is downloaded using this results, along with its gff (genomic features) file. Besides, a csv (comma separated values) file containing the top 2 hits in kmerfinder is generated, in order to trace whether or not a particular sample can be contaminated.
+
+The reads are assembled using `Unicycler (v 0.4.8)` with standard parameters. Once this process has reached its end, the resulting assembly is evaluated and compared to the downloaded genome and gff using `Quast (v 5.0.2)`. In addition, the assemblies are mapped against the downloaded reference with `Minimap 2 (v 2.24)` with the default params, and the resulting *.sam* file is converted to a sorted *.bam* file using `Samtools (v 1.14)`. The assembly is later annotated using `Prokka (v 1.14.6)`.
+
+For the last step, all logs generated during the pipeline (FastQC, FastP, Quast) are collapsed into a `Multiqc (v 1.11)` html file to allow their easy checking.
 
 ## Credits
+BU-ISCIII Bacterial Assembly was originally written by Guillermo Gorines. 
 
-nf-core/assemblybacterias was originally written by Luis Chapado.
 
-We thank the following people for their extensive assistance in the development
-of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#assemblybacterias` channel](https://nfcore.slack.com/channels/assemblybacterias) (you can join with [this invite](https://nf-co.re/join/slack)).
+## Disclaimer
+This pipeline, despite not being mantained by the nf-core community, follows its good-practise protocols, and has been created under usage of their nf-core tools.
 
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi. -->
-<!-- If you use  nf-core/assemblybacterias for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use  BU-ISCIII Bacterial Assembly for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 You can cite the `nf-core` publication as follows:
 

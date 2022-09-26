@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     for sample in sample_list:
 
-        file_name = os.path.join(path, sample, "results.txt")
+        file_name = os.path.join(path, sample, sample + "_results.txt")
         kmer_all[sample] = kmerfinder_dictionary(file_name)
 
     print("kmerfinder_dictionary done")

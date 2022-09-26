@@ -79,28 +79,8 @@ ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 /*
  * Create a channel for input read files
  */
-/*
-if (params.input) {
-    if (params.single_end) {
-        Channel
-            .from(params.input)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input was empty - no input files supplied' }
-            .into { ch_read_files_fastp; ch_read_files_fastqc;  ch_read_files_trimming }
-    } else {
-        Channel
-            .from(params.input)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true), file(row[1][1], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input was empty - no input files supplied' }
-            .into { ch_read_files_fastp; ch_read_files_fastqc;  ch_read_files_trimming }
-    }
-} else {
-    Channel
-        .fromFilePairs(params.input, size: params.single_end ? 1 : 2)
-        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --single_end on the command line." }
-        .into { ch_read_files_fastp; ch_read_files_fastqc; ch_read_files_trimming }
-}
-*/
+
+if (params.input) { ch_input = file(params.input, checkIfExists: true) } else { exit 1, "Samplesheet file (-input) not specified!" }
 
 ////////////////////////////////////////////////////
 /* --               PARAMETER SUMMARY          -- */
@@ -116,6 +96,7 @@ if (params.reference_fasta) summary['Reference'] = "Provided beforehand"
 if (params.reference_fasta) summary['Fasta reference'] = params.reference_fasta
 if (params.reference_gff) summary['GFF reference'] = params.reference_gff
 if (!params.reference_fasta) summary['Reference'] = "To be downloaded"
+summary['Reference outdir'] = params.reference_outdir
 summary['Gram']             = params.gram
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -188,92 +169,6 @@ process get_software_versions {
 
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
-}
-
-if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_bacteria_database.endsWith('.tar')) {
-
-    Channel.from(kmerfinder_bacteria_database).set { kmerfinder_db_uncompress } 
-
-    process UNCOMPRESS_KMERFINDER_DB {
-        label 'error_retry'
-
-        input:
-        path(kmerfinder_compressed_database) from kmerfinder_db_uncompress
-
-        output: 
-        path(kmerfinderDB) into ch_kmerfinder_db
-
-        script:
-        kmerfinderDB = kmerfinder_compressed_database.toString() - ".gz" - ".tar"
-        """
-        mkdir $kmerfinderDB
-        tar -xf ${kmerfinder_compressed_database} -C ${kmerfinderDB} --strip-components 1
-        """
-    }
-
-} 
-
-/*
- * PREPROCESSING: check and uncompress references
- */
-
-if ( params.reference_fasta ) {
-
-    if (params.reference_fasta){
-        file(params.reference_fasta, checkIfExists: true)
-        if (params.reference_fasta.endsWith('.gz')) {
-
-            process GUNZIP_FASTA {
-                label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
-
-                input:
-                path(fasta) from params.fasta
-
-                output:
-                path(unzip) into fasta_reference
-
-                script:
-                unzip = fasta.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $fasta
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_fasta).set { fasta_reference }
-        }
-    }
-
-    if (params.reference_gff) {
-        file(params.reference_gff, checkIfExists: true)
-        if (params.reference_gff.endsWith('.gz')) {
-            
-            process GUNZIP_GFF {
-                label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
-
-                input:
-                path(gff) from params.gff
-
-                output:
-                path(unzip) into gff_reference
-
-                script:
-                unzip = gff.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $gff
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_gff).set { gff_reference }
-        }
-    }
-
-    fasta_reference.combine(gff_reference).set { quast_references }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -511,6 +406,96 @@ process CAT_FASTQ {
     }
 }
 
+
+
+if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_bacteria_database.endsWith('.tar')) {
+
+    Channel.from(kmerfinder_bacteria_database).set { kmerfinder_db_uncompress } 
+
+    process UNCOMPRESS_KMERFINDER_DB {
+        label 'error_retry'
+
+        input:
+        path(kmerfinder_compressed_database) from kmerfinder_db_uncompress
+
+        output: 
+        path(kmerfinderDB) into ch_kmerfinder_db
+
+        script:
+        kmerfinderDB = kmerfinder_compressed_database.toString() - ".gz" - ".tar"
+        """
+        mkdir $kmerfinderDB
+        tar -xf ${kmerfinder_compressed_database} -C ${kmerfinderDB} --strip-components 1
+        """
+    }
+
+} 
+
+/*
+ * PREPROCESSING: check and uncompress references
+ */
+
+if ( params.reference_fasta ) {
+
+    if (params.reference_fasta){
+        file(params.reference_fasta, checkIfExists: true)
+        if (params.reference_fasta.endsWith('.gz')) {
+
+            process GUNZIP_FASTA {
+                label 'error_retry'
+                if (params.save_reference) {
+                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
+                }
+
+                input:
+                path(fasta) from params.fasta
+
+                output:
+                path(unzip) into fasta_reference
+
+                script:
+                unzip = fasta.toString() - '.gz'
+                """
+                pigz -f -d -p $task.cpus $fasta
+                """
+            }
+        } else {
+            Channel.fromPath(params.reference_fasta).set { fasta_reference }
+        }
+    }
+
+    if (params.reference_gff) {
+        file(params.reference_gff, checkIfExists: true)
+        if (params.reference_gff.endsWith('.gz')) {
+            
+            process GUNZIP_GFF {
+                label 'error_retry'
+                if (params.save_reference) {
+                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
+                }
+
+                input:
+                path(gff) from params.gff
+
+                output:
+                path(unzip) into gff_reference
+
+                script:
+                unzip = gff.toString() - '.gz'
+                """
+                pigz -f -d -p $task.cpus $gff
+                """
+            }
+        } else {
+            Channel.fromPath(params.reference_gff).set { gff_reference }
+        }
+    }
+
+    fasta_reference.combine(gff_reference).set { quast_references }
+}
+
+
+
 /*
  * STEP 1 - FastQC
  */
@@ -538,18 +523,15 @@ process FASTQC {
 /*
  * STEP 2: Fastp adapter and quality filtering
  */
-
 process FASTP {
         tag "$samplename"
         label 'process_low'
-        publishDir "${params.outdir}/01-preprocessing/fastp", mode: params.publish_dir_mode,
+        publishDir "${params.outdir}/01-preprocessing", mode: params.publish_dir_mode,
             saveAs: { filename ->
-                        if (filename.endsWith(".json")) filename
-                        else if (filename.endsWith(".fastp.html")) filename
-                        else if (filename.endsWith("_fastqc.html")) "fastqc/$filename"
-                        else if (filename.endsWith(".zip")) "fastqc/zips/$filename"
-                        else if (filename.endsWith(".log")) "log/$filename"
-                        else params.save_trimmed ? filename : null
+                        if (filename.endsWith(".json")) "fastp/${filename}"
+                        else if (filename.endsWith(".fastp.html")) "fastp/${filename}"
+                        else if (filename.endsWith(".log")) "fastp/logs/${filename}"
+                        else if (params.save_trimmed && filename.endsWith(".trim.fastq.gz")) "trimmed_sequences/${filename}"
                     }
         input:
         tuple val(samplename), val(single_end), path(reads) from ch_cat_fastp
@@ -594,22 +576,22 @@ process FASTP {
 
 process KMERFINDER {
     tag "$samplename"
-    label 'process_low'
+    label 'process_medium'
 
-    publishDir "${params.outdir}/02-kmerfinder/${samplename}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/02-kmerfinder", mode: params.publish_dir_mode,
+						saveAs: { filename -> if(filename == "${samplename_dir}") "${samplename_dir}"}
 
     input:
     tuple val(samplename), val(single_end), path(reads) from ch_fastp_kmerfider
     path(kmerfinderDB) from ch_kmerfinder_db
 
     output:
-    path(kmerfinder_result) into ch_kmerfinder_results
+    path("${samplename_dir}/${samplename}_results.txt") into ch_kmerfinder_results
     path(samplename_dir) into ch_kmerfinder_results_bydir
 
     script:
     samplename_dir = "${samplename}"
     in_reads = single_end ? "${reads}" : "${reads[0]} ${reads[1]}"
-    kmerfinder_result = "${samplename}_results.txt"
 
     """
     kmerfinder.py \\
@@ -617,9 +599,9 @@ process KMERFINDER {
     --output_folder $samplename_dir \\
     --db_path $kmerfinderDB/bacteria.ATG \\
     -tax $kmerfinderDB/bacteria.name \\
-    -x 
+    -x
 
-    ln -s ${samplename_dir}/results.txt $kmerfinder_result
+    mv $samplename_dir/results.txt $samplename_dir/${samplename}_results.txt
     """
 }
 
@@ -637,7 +619,6 @@ process CHECK_CONTAMINATION {
     script:
     """
     parse_kmerfinder.py --path . --output_bn kmerfinder.bn --output_csv kmerfinder.csv
-
     """
 }
 
@@ -649,7 +630,7 @@ if (!params.reference_fasta && !params.reference_gff) {
     process FIND_DOWNLOAD_COMMON_REFERENCE {
 
         label 'process_low'
-        publishDir "${params.outdir}/04-mapping_to_reference/reference", mode: params.publish_dir_mode
+        publishDir path : params.reference_outdir ? "${params.reference_outdir}" : "${params.outdir}/04-mapping_to_reference/reference", mode: params.publish_dir_mode
 
         input:
         path(kmerfinder_results) from ch_kmerfinder_results.collect()
@@ -677,7 +658,7 @@ if (!params.reference_fasta && !params.reference_gff) {
 
 process UNICYCLER {
 	tag "${samplename}"
-    label 'process_low'
+    label 'process_high'
 	publishDir path: { "${params.outdir}/03-assembly/unicycler" }, mode: params.publish_dir_mode
 
 	input:
@@ -685,11 +666,11 @@ process UNICYCLER {
 
 	output:
 	path(assembly_result) into ch_unicycler_quast
-    tuple val(samplename), path("${samplename}/${samplename}.fasta") into ch_unicycler_prokka, ch_minimap
+    tuple val(samplename), path(assembly_result) into ch_unicycler_prokka, ch_minimap
     
 	script:
     in_reads = single_end ? "-l ${reads}" : "-1 ${reads[0]} -2 ${reads[1]}"
-    assembly_result = "${samplename}/${samplename}.fasta"
+    assembly_result = "${samplename}.fasta"
 
 	"""
 	unicycler \\
@@ -704,7 +685,6 @@ process UNICYCLER {
 process MINIMAP {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/04-mapping_to_reference/", mode: params.publish_dir_mode
 
     input:
     tuple val(samplename), path(contigs), path(reference) from ch_minimap.combine(minimap_reference)
@@ -723,7 +703,8 @@ process MINIMAP {
 process SAMTOOLS {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/04-mapping_to_reference/"
+	publishDir path: "${params.outdir}/04-mapping_to_reference", mode: params.publish_dir_mode
+
 
     input:
     tuple val(samplename), path(samfile) from ch_samtools_alignment
@@ -741,11 +722,10 @@ process SAMTOOLS {
 process QUAST {
     tag "${reference_fasta}"
     label 'process_medium'
-	publishDir path: {"${params.outdir}/03-assembly/quast"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "quast_results") "${prefix}_quast_results"}
+	publishDir path: {"${params.outdir}/03-assembly"}, mode: params.publish_dir_mode,
+						saveAs: { filename -> if(filename == "quast_results") "quast_results"}
 
 	input:
-
 	path(assembly_result) from ch_unicycler_quast.collect()
     tuple path(reference_fasta), path(reference_gff) from quast_references
 
@@ -768,21 +748,22 @@ process PROKKA {
     tag "${samplename}"
     label 'process_medium'
 
-	publishDir path: {"${params.outdir}/03-assembly/prokka"}, mode: params.publish_dir_mode,
-						saveAs: { filename -> if(filename == "prokka_results") "${samplename}_prokka"}
+	publishDir path: {"${params.outdir}/03-assembly/prokka"}, mode: params.publish_dir_mode
 
 	input:
 	tuple val(samplename), path(scaffold) from ch_unicycler_prokka
 
 	output:
-	path("prokka_results") into prokka_results
+	path(results_dir) into prokka_results_multiqc
 
 	script:
+
+    results_dir = "${samplename}_prokka"
 
 	"""
 	prokka \\
     --force \\
-    --outdir prokka_results \\
+    --outdir $results_dir \\
     --prefix $samplename \\
     --addgenes \\
     --kingdom Bacteria \\
@@ -820,12 +801,15 @@ process OUTPUT_DOCUMENTATION {
  */
 
 process MULTIQC {
-    publishDir "${params.outdir}/MultiQC", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/99-stats/MultiQC", mode: params.publish_dir_mode
 
     input:
     path(multiqc_config) from ch_multiqc_config
     path(mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])   
     path('fastqc/*') from ch_fastqc_results.collect().ifEmpty([])
+    path('fastp/*') from ch_fastp_mqc.collect().ifEmpty([])
+    path('quast/*') from quast_multiqc.collect().ifEmpty([])
+    path('prokka/*') from prokka_results_multiqc.collect().ifEmpty([])
     path('software_versions/*') from ch_software_versions_yaml.collect()
     path(workflow_summary) from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
 
