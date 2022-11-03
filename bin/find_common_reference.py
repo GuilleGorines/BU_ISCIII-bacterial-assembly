@@ -66,20 +66,23 @@ def group_references(kmer_result_dir, out_file):
             file_lines = fh.readlines()
 
         # remove heading
-        heading = file_lines[0].split("\t")
-        first_line = file_lines[1].split("\t")
+        try:
+            heading = file_lines[0].split("\t")
+            first_line = file_lines[1].split("\t")
 
-        # where is the assembly in the header?
-        # find reference according to index
-        index_assembly = heading.index("# Assembly")
-        reference = first_line[index_assembly]
+            # where is the assembly in the header?
+            # find reference according to index
+            index_assembly = heading.index("# Assembly")
+            reference = first_line[index_assembly]
 
-        # add it to the dict if not there
-        if reference not in reference_assembly:
-            index_description = heading.index("Description")
-            reference_assembly[reference] = [0, first_line[index_description]]
-        # sum 1 for another occurrence
-        reference_assembly[reference][0] += 1
+            # add it to the dict if not there
+            if reference not in reference_assembly:
+                index_description = heading.index("Description")
+                reference_assembly[reference] = [0, first_line[index_description]]
+            # sum 1 for another occurrence
+            reference_assembly[reference][0] += 1
+        except IndexError:
+            pass 
 
     # sort it (more occurrences first in file)
     order_reference = dict(
