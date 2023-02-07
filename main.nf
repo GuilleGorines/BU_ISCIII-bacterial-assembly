@@ -429,16 +429,8 @@ if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_ba
 
 if ( params.reference_fasta && params.reference_gff ) {
 
-    println(params.reference_fasta)
-    println(params.reference_gff)
-
     reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
     reference_gff_ch = file(params.reference_gff, checkIfExists: true)
-
-    aa = file(params.reference_fasta, checkIfExists: true)
-    aa.view()
-    bb = file(params.reference_gff, checkIfExists: true)
-    bb.view()
 
     if (params.reference_fasta.endsWith('.gz')) {
         process GUNZIP_FASTA {
