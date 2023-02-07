@@ -434,7 +434,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(fasta) from params.reference_fasta
+            path(params.reference_fasta)
 
             output:
             path(unzip) into fasta_reference
@@ -455,7 +455,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(gff) from params.reference_gff
+            path(params.reference_gff) 
 
             output:
             path(unzip) into gff_reference
