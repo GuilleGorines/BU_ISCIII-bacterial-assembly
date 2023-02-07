@@ -429,12 +429,15 @@ if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_ba
 
 if ( params.reference_fasta && params.reference_gff) {
 
+    reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
+    reference_gff_ch = file(params.reference_gff, checkIfExists: true)
+
     if (params.reference_fasta.endsWith('.gz')) {
         process GUNZIP_FASTA {
             label 'error_retry'
 
             input:
-            path(fasta) from file(params.reference_fasta, checkIfExists: true)
+            path(fasta) from reference_fasta_ch
 
             output:
             path(unzip) into fasta_reference
@@ -446,7 +449,7 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        file(params.reference_fasta, checkIfExists: true).set { fasta_reference }
+       reference_fasta_ch.set { fasta_reference }
     }
     if (params.reference_gff.endsWith('.gz')) {
         
@@ -454,7 +457,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(gff) from file(params.reference_gff, checkIfExists: true) 
+            path(gff) from reference_gff_ch
 
             output:
             path(unzip) into gff_reference
@@ -466,14 +469,12 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        file(params.reference_gff, checkIfExists: true).set { gff_reference }
+        reference_gff_ch.set { gff_reference }
     }
 
     fasta_reference.combine(gff_reference).set { quast_references }
-} else {
-    if (params.reference_fasta && !params.reference_gff) {exit 1, "Fasta reference was provided, GFF reference was not"}
-    else if (params.reference_gff && !params.reference_gff) {exit 1, "GFF reference was provided, Fasta was not"}
-}
+} else if (params.reference_fasta && !params.reference_gff) {exit 1, "Fasta reference was provided, GFF reference was not"}  
+  else if (params.reference_gff && !params.reference_gff) {exit 1, "GFF reference was provided, Fasta was not"}
 
 /*
  * STEP 1 - FastQC
