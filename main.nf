@@ -431,7 +431,7 @@ if ( params.reference_fasta && params.reference_gff ) {
 
     reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
     reference_gff_ch = file(params.reference_gff, checkIfExists: true)
-
+    
     if (params.reference_fasta.endsWith('.gz')) {
         process GUNZIP_FASTA {
             label 'error_retry'
@@ -440,7 +440,7 @@ if ( params.reference_fasta && params.reference_gff ) {
             path(fasta_file) from reference_fasta_ch
 
             output:
-            path(unzip) into fasta_reference
+            path(unzip) into fasta_reference, minimap_reference
 
             script:
             unzip = fasta_file.toString() - '.gz'
@@ -449,7 +449,7 @@ if ( params.reference_fasta && params.reference_gff ) {
             """
         }
     } else {
-       reference_fasta_ch.set { fasta_reference }
+       reference_fasta_ch.set { fasta_reference, minimap_reference }
     }
     if (params.reference_gff.endsWith('.gz')) {
         
