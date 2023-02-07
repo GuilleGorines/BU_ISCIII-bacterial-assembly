@@ -434,7 +434,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(fasta) from Channel.fromPath(params.reference_fasta)
+            path(fasta) from file(params.reference_fasta, checkIfExists: true)
 
             output:
             path(unzip) into fasta_reference
@@ -446,7 +446,7 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        Channel.fromPath(params.reference_fasta, checkIfExists: true).set { fasta_reference }
+        file(params.reference_fasta, checkIfExists: true).set { fasta_reference }
     }
     if (params.reference_gff.endsWith('.gz')) {
         
@@ -454,7 +454,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(gff) from Channel.fromPath(params.reference_gff) 
+            path(gff) from file(params.reference_gff, checkIfExists: true) 
 
             output:
             path(unzip) into gff_reference
@@ -466,7 +466,7 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        Channel.fromPath(params.reference_gff, checkIfExists: true).set { gff_reference }
+        file(params.reference_gff, checkIfExists: true).set { gff_reference }
     }
 
     fasta_reference.combine(gff_reference).set { quast_references }
