@@ -448,7 +448,7 @@ if ( params.reference_fasta && params.reference_gff) {
             path(unzip) into fasta_reference
 
             script:
-            unzip = fasta.toString() - '.gz'
+            unzip = fasta_file.toString() - '.gz'
             """
             pigz -f -d -p ${task.cpus} ${fasta_file}
             """
