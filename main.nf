@@ -432,6 +432,9 @@ if ( params.reference_fasta && params.reference_gff) {
     reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
     reference_gff_ch = file(params.reference_gff, checkIfExists: true)
 
+    reference_fasta_ch.view()
+    reference_gff_ch.view()
+
     if (params.reference_fasta.endsWith('.gz')) {
         process GUNZIP_FASTA {
             label 'error_retry'
