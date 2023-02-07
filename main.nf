@@ -449,7 +449,7 @@ if ( params.reference_fasta && params.reference_gff ) {
             """
         }
     } else {
-       reference_fasta_ch.set { fasta_reference, minimap_reference }
+       reference_fasta_ch.into { fasta_reference, minimap_reference }
     }
     if (params.reference_gff.endsWith('.gz')) {
         
