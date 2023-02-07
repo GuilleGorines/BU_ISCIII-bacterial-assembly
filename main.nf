@@ -432,15 +432,17 @@ if ( params.reference_fasta && params.reference_gff) {
     reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
     reference_gff_ch = file(params.reference_gff, checkIfExists: true)
 
-    reference_fasta_ch.view()
-    reference_gff_ch.view()
+    aa = file(params.reference_fasta, checkIfExists: true)
+    aa.view()
+    bb = file(params.reference_gff, checkIfExists: true)
+    bb.view()
 
     if (params.reference_fasta.endsWith('.gz')) {
         process GUNZIP_FASTA {
             label 'error_retry'
 
             input:
-            path(fasta) from reference_fasta_ch
+            path(fasta_file) from reference_fasta_ch
 
             output:
             path(unzip) into fasta_reference
@@ -448,7 +450,7 @@ if ( params.reference_fasta && params.reference_gff) {
             script:
             unzip = fasta.toString() - '.gz'
             """
-            pigz -f -d -p ${task.cpus} ${fasta}
+            pigz -f -d -p ${task.cpus} ${fasta_file}
             """
         }
     } else {
@@ -460,7 +462,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            path(gff) from reference_gff_ch
+            path(gff_file) from reference_gff_ch
 
             output:
             path(unzip) into gff_reference
@@ -468,7 +470,7 @@ if ( params.reference_fasta && params.reference_gff) {
             script:
             unzip = gff.toString() - '.gz'
             """
-            pigz -f -d -p $task.cpus $gff
+            pigz -f -d -p ${task.cpus} ${gff_file}
             """
         }
     } else {
