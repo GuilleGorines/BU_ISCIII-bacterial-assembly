@@ -427,7 +427,10 @@ if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_ba
  * PREPROCESSING: check and uncompress references
  */
 
-if ( params.reference_fasta && params.reference_gff) {
+if ( params.reference_fasta && params.reference_gff ) {
+
+    println(params.reference_fasta)
+    println(params.reference_gff)
 
     reference_fasta_ch = file(params.reference_fasta, checkIfExists: true)
     reference_gff_ch = file(params.reference_gff, checkIfExists: true)
@@ -442,7 +445,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            file(fasta_file) from reference_fasta_ch
+            path(fasta_file) from reference_fasta_ch
 
             output:
             path(unzip) into fasta_reference
@@ -462,7 +465,7 @@ if ( params.reference_fasta && params.reference_gff) {
             label 'error_retry'
 
             input:
-            file(gff_file) from reference_gff_ch
+            path(gff_file) from reference_gff_ch
 
             output:
             path(unzip) into gff_reference
@@ -478,6 +481,7 @@ if ( params.reference_fasta && params.reference_gff) {
     }
 
     fasta_reference.combine(gff_reference).set { quast_references }
+
 } else if (params.reference_fasta && !params.reference_gff) {exit 1, "Fasta reference was provided, GFF reference was not"}  
   else if (params.reference_gff && !params.reference_gff) {exit 1, "GFF reference was provided, Fasta was not"}
 
