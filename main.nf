@@ -427,60 +427,54 @@ if ( params.kmerfinder_bacteria_database.endsWith('.gz') || params.kmerfinder_ba
  * PREPROCESSING: check and uncompress references
  */
 
-if ( params.reference_fasta ) {
+if ( params.reference_fasta && params.reference_gff) {
 
-    if (params.reference_fasta){
-        file(params.reference_fasta, checkIfExists: true)
-        if (params.reference_fasta.endsWith('.gz')) {
+    if (params.reference_fasta.endsWith('.gz')) {
+        process GUNZIP_FASTA {
+            label 'error_retry'
 
-            process GUNZIP_FASTA {
-                label 'error_retry'
+            input:
+            path(fasta) from params.reference_fasta
 
-                input:
-                path(fasta) from params.reference_fasta
+            output:
+            path(unzip) into fasta_reference
 
-                output:
-                path(unzip) into fasta_reference
-
-                script:
-                unzip = fasta.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $fasta
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_fasta).set { fasta_reference }
+            script:
+            unzip = fasta.toString() - '.gz'
+            """
+            pigz -f -d -p ${task.cpus} ${fasta}
+            """
         }
+    } else {
+        Channel.fromPath(params.reference_fasta).set { fasta_reference }
     }
 
-    if (params.reference_gff) {
-        file(params.reference_gff, checkIfExists: true)
-        if (params.reference_gff.endsWith('.gz')) {
-            
-            process GUNZIP_GFF {
-                label 'error_retry'
+    if (params.reference_gff.endsWith('.gz')) {
+        
+        process GUNZIP_GFF {
+            label 'error_retry'
 
-                input:
-                path(gff) from params.reference_gff
+            input:
+            path(gff) from params.reference_gff
 
-                output:
-                path(unzip) into gff_reference
+            output:
+            path(unzip) into gff_reference
 
-                script:
-                unzip = gff.toString() - '.gz'
-                """
-                pigz -f -d -p $task.cpus $gff
-                """
-            }
-        } else {
-            Channel.fromPath(params.reference_gff).set { gff_reference }
+            script:
+            unzip = gff.toString() - '.gz'
+            """
+            pigz -f -d -p $task.cpus $gff
+            """
         }
+    } else {
+        Channel.fromPath(params.reference_gff).set { gff_reference }
     }
 
     fasta_reference.combine(gff_reference).set { quast_references }
+} else {
+    if (params.reference_fasta && !params.reference_gff) {exit 1, "Fasta reference was provided, GFF reference was not"}
+    else if (params.reference_gff && !params.reference_gff) {exit 1, "GFF reference was provided, Fasta was not"}
 }
-
-
 
 /*
  * STEP 1 - FastQC
