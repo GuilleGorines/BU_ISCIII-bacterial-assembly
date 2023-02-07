@@ -446,9 +446,8 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        Channel.fromPath(params.reference_fasta).set { fasta_reference }
+        Channel.fromPath(params.reference_fasta, checkIfExists: true).set { fasta_reference }
     }
-
     if (params.reference_gff.endsWith('.gz')) {
         
         process GUNZIP_GFF {
@@ -467,7 +466,7 @@ if ( params.reference_fasta && params.reference_gff) {
             """
         }
     } else {
-        Channel.fromPath(params.reference_gff).set { gff_reference }
+        Channel.fromPath(params.reference_gff, checkIfExists: true).set { gff_reference }
     }
 
     fasta_reference.combine(gff_reference).set { quast_references }
