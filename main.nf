@@ -16,7 +16,7 @@ log.info Headers.nf_core(workflow, params.monochrome_logs)
 ////////////////////////////////////////////////////+
 def json_schema = "$projectDir/nextflow_schema.json"
 if (params.help) {
-    def command = "nextflow run nf-core/assemblybacterias --input 'samplesheet.csv' -profile docker --fasta GRCh39.fna.gz"
+    def command = "nextflow run nf-core/assemblybacterias --input 'samplesheet.csv' -profile docker"
     log.info NfcoreSchema.params_help(workflow, params, json_schema, command)
     exit 0
 }
@@ -50,14 +50,6 @@ if (!params.kmerfinder_bacteria_database) {exit 1, "No kmerfinder database was p
 
 // TODO nf-core: Add any reference files that are needed
 // Configurable reference genomes
-//
-// NOTE - THIS IS NOT USED IN THIS PIPELINE, EXAMPLE ONLY
-// If you want to use the channel below in a process, define the following:
-//   input:
-//   file fasta from ch_fasta
-//
-//params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-// if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 
 // Check AWS batch settings
 if (workflow.profile.contains('awsbatch')) {
@@ -443,12 +435,9 @@ if ( params.reference_fasta ) {
 
             process GUNZIP_FASTA {
                 label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
 
                 input:
-                path(fasta) from params.fasta
+                path(fasta) from params.reference_fasta
 
                 output:
                 path(unzip) into fasta_reference
@@ -470,12 +459,9 @@ if ( params.reference_fasta ) {
             
             process GUNZIP_GFF {
                 label 'error_retry'
-                if (params.save_reference) {
-                    publishDir "${params.outdir}/genome", mode: params.publish_dir_mode
-                }
 
                 input:
-                path(gff) from params.gff
+                path(gff) from params.reference_gff
 
                 output:
                 path(unzip) into gff_reference
